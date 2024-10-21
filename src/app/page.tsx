@@ -1,74 +1,87 @@
 'use client'
 
-import { useContext, useState } from "react";
+import { useContext } from "react";
 import { HomeContext } from "./context/HomeContext";
 import { FaPause, FaPlay } from "react-icons/fa";
 import videos, { Video } from './data/video';
 import { convertTimeToString } from "./utils/Utils";
 
 export default function Home() {
-  const [showFilter, setShowFilter] = useState(true);
-  const {
-    videoURL,
-    playing,
-    totalTime,
-    currentTime,
-    videoRef,
-    canvasRef,
-    playPause,
-    configCurrentTime,
-    configVideo,
-    configFilter
-  } = useContext(HomeContext);
-  return (
-    <main className="mx-auto w-[80%] mt-2 flex">
-      <div className="w-[65%] mr-1">
-        <video className="w-full" ref={videoRef} src={videoURL} hidden={showFilter}></video>
-        <canvas className="w-full h-[380px]" ref={canvasRef} hidden={!showFilter}></canvas>
+    const {
+        videoURL,
+        playing,
+        totalTime,
+        currentTime,
+        videoRef,
+        playPause,
+        configCurrentTime,
+        configVideo,
+        setVolume,
+        volume
+    } = useContext(HomeContext);
 
-        <div className="bg-black">
-          <input className="appearance-none
-                            [&::-webkit-slider-runnable-track]:appearance-none
-                            [&::-webkit-slider-thumb]:appearance-none
-                            [&::-webkit-slider-runnable-track]:bg-[tomato]
-                            [&::-webkit-slider-runnable-track]:h-[10px]
-                            [&::-webkit-slidershowFilter-thumb]:h-[10px]
-                            [&::-webkit-slider-thumb]:w-[10px]
-                            [&::-webkit-slider-thumb]:bg-[green]"
-            type="range"
-            min={0}
-            max={totalTime}
-            value={currentTime}
-            onChange={(e) => configCurrentTime(Number(e.target.value))}
-          >
-          </input>
-          <button className="text-white" onClick={playPause}>
-            {playing ? <FaPause /> : <FaPlay />}
-          </button>
-          <select onChange={(e) => configFilter(Number(e.target.value))} hidden={!showFilter}>
-          <option selected value={0}>Sem filtro</option>
-            <option value={1}>Verde</option>
-            <option value={2}>Azul</option>
-            <option value={3}>Vermelho</option>
-            <option value={4}>Preto e branco</option>
-          </select>
-        <input type="checkbox" name="Filtro" onChange={()=>setShowFilter(!showFilter)}/>
-          <span className="text-white">
-          {convertTimeToString(currentTime)}:{convertTimeToString(totalTime)}
-          </span>
-        </div>
-      </div>
-      <div className="w-[35%] h-[100vh]">
-        {
-          videos.map((video:Video, index) => {
-            return (
-              <button className="w-full" onClick={(e) => configVideo(index)}>
-                <img key={index} className="w-full h-[200px] mb-1" src={video.imageURL}></img>
-              </button>
-            )
-          })
+    // Ajuste o volume do vídeo quando o volume mudar
+    const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const newVolume = Number(e.target.value);
+        setVolume(newVolume);
+        if (videoRef.current) {
+            videoRef.current.volume = newVolume; // Atualiza o volume do vídeo
         }
-      </div>
-    </main>
-  );
+    };
+
+    return (
+        <main className="mx-auto w-[80%] mt-2 flex">
+            {/* Player de Vídeo */}
+            <div className="w-[65%] mr-1">
+                <video className="w-full rounded-lg shadow-lg" ref={videoRef} src={videoURL}></video>
+
+                <div className="bg-black p-4 mt-2 rounded-lg flex items-center space-x-4">
+                    {/* Barra de Progresso */}
+                    <input 
+                        className="flex-1 h-2 bg-gray-300 rounded-lg appearance-none cursor-pointer"
+                        type="range"
+                        min={0}
+                        max={totalTime}
+                        value={currentTime}
+                        onChange={(e) => configCurrentTime(Number(e.target.value))}
+                    />
+                    
+                    {/* Play/Pause */}
+                    <button className="text-white p-2 hover:bg-gray-700 rounded-full" onClick={playPause}>
+                        {playing ? <FaPause /> : <FaPlay />}
+                    </button>
+
+                    {/* Controles de Volume */}
+                    <input 
+                        type="range" 
+                        min={0} 
+                        max={1} 
+                        step={0.1} 
+                        value={volume} 
+                        onChange={handleVolumeChange} // Atualiza o volume ao mudar
+                        className="bg-gray-800 rounded-lg cursor-pointer"
+                    />
+
+                    {/* Tempo Atual / Total */}
+                    <span className="text-white">
+                        {convertTimeToString(currentTime)} / {convertTimeToString(totalTime)}
+                    </span>
+                </div>
+            </div>
+
+            {/* Lista de Vídeos */}
+            <div className="w-[35%] h-[100vh] overflow-y-scroll">
+                {videos.map((video: Video, index) => (
+                    <button 
+                        key={index} 
+                        className="w-full p-2 hover:bg-gray-200 transition"
+                        onClick={() => configVideo(index)}
+                    >
+                        <img className="w-full h-[200px] object-contain rounded-lg shadow-md" src={video.imageURL} alt={`Thumbnail ${video.description}`} />
+                        <p className="text-center text-gray-700 mt-1">{video.description}</p>
+                    </button>
+                ))}
+            </div>
+        </main>
+    );
 }

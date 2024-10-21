@@ -8,12 +8,12 @@ const videos: Video[] = [
     {
         videoURL: "video/video01.mp4",
         imageURL: "image/image01.jpg",
-        description: "Elephants Dreams"
+        description: "Luffy vs Kaido"
     },
     {
         videoURL: "video/video02.mp4",
         imageURL: "image/image02.jpg",
-        description: "Vida animal"
+        description: "Zorro vs King"
     }
 ]
 export default videos;
